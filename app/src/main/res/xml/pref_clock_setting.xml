@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <MultiSelectListPreference
+        android:key="frequency"
+        android:entries="@array/days"
+        android:entryValues="@array/day_value"
+        android:title="重复" />
+    <SwitchPreference
+        android:title="响铃时振动"
+        android:key="vibrate"
+        android:visibility="visible"
+        android:defaultValue="true" />
+</PreferenceScreen>
