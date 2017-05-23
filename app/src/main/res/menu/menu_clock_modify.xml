@@ -4,7 +4,8 @@
     <item
         android:id="@+id/menu_modify"
         android:title="保存"
-        app:showAsAction="never" />
+        android:icon="@mipmap/ic_check_white_48dp"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_delete"
         android:title="删除"
