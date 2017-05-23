@@ -134,6 +134,7 @@ public class Clock {
         String s = "";
         s += String.valueOf(getHour());
         s += ":";
+        if (getMinute() < 10) s += "0";
         s += String.valueOf(getMinute());
         return s;
     }
