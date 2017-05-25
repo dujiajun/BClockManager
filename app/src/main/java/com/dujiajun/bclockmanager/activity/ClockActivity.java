@@ -3,6 +3,7 @@ package com.dujiajun.bclockmanager.activity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.dujiajun.bclockmanager.MyDatabaseHelper;
 import com.dujiajun.bclockmanager.R;
 import com.dujiajun.bclockmanager.model.Clock;
+import com.loonggg.lib.alarmmanager.clock.AlarmManagerUtil;
 
 public class ClockActivity extends AppCompatActivity {
     private Toolbar toolbar;
@@ -108,7 +110,17 @@ public class ClockActivity extends AppCompatActivity {
                 values.put("minute", clock.getMinute());
                 values.put("open", true);
                 db.insert("Clocks", null, values);
-                Toast.makeText(ClockActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
+                Cursor cursor = db.rawQuery("select * from Clocks order by id DESC", null);
+
+                if (cursor.moveToFirst()) {
+
+                    id = cursor.getInt(cursor.getColumnIndex("id"));
+                    AlarmManagerUtil.setAlarm(getApplicationContext(), 0, clock.getHour(), clock.getMinute(), id, 0, null, 0);
+                    Toast.makeText(ClockActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
+                }
+
+                cursor.close();
+
                 finish();
             }
 
@@ -126,6 +138,8 @@ public class ClockActivity extends AppCompatActivity {
                 values.put("hour", clock.getHour());
                 values.put("minute", clock.getMinute());
                 db.update("Clocks", values, "id = " + String.valueOf(id), null);
+                AlarmManagerUtil.cancelAlarm(getApplicationContext(), AlarmManagerUtil.ALARM_ACTION, id);
+                AlarmManagerUtil.setAlarm(getApplicationContext(), 0, clock.getHour(), clock.getMinute(), id, 0, null, 0);
                 Toast.makeText(ClockActivity.this, "修改成功", Toast.LENGTH_SHORT).show();
                 finish();
             }
@@ -135,6 +149,7 @@ public class ClockActivity extends AppCompatActivity {
                         .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
+                                AlarmManagerUtil.cancelAlarm(getApplicationContext(), AlarmManagerUtil.ALARM_ACTION, id);
                                 db.delete("Clocks", "id = " + String.valueOf(id), null);
                                 finish();
                             }
