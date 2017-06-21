@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/colorPrimary"
-            app:title="设置闹钟"
+            app:title="选择连接设备"
             app:navigationIcon="@mipmap/ic_arrow_back_white_36dp"
             app:titleTextColor="@android:color/white"
             app:layout_scrollFlags="scroll|enterAlways|snap">
@@ -22,13 +22,13 @@
         </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
 
-    <TimePicker
-        android:id="@+id/timepicker"
+
+    <ListView
+        android:id="@+id/lv_deivces"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    </TimePicker>
-
+    </ListView>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.View;
 
+import top.wuhaojie.bthelper.BtHelperClient;
+
 
 public class ClockAlarmActivity extends Activity {
     private MediaPlayer mediaPlayer;
@@ -54,6 +56,8 @@ public class ClockAlarmActivity extends Activity {
                 }
             }
         });
+
+        BtHelperClient btHelperClient = BtHelperClient.from(this);
 
 
     }
