@@ -87,7 +87,6 @@ public class SearchingActivity extends AppCompatActivity {
         });
         if (btHelperClient == null) {
             btHelperClient = BtHelperClient.from(this);
-
         }
         btHelperClient.searchDevices(onSearchDeviceListener);
     }
@@ -114,6 +113,18 @@ public class SearchingActivity extends AppCompatActivity {
         @Override
         public void onSearchCompleted(List<BluetoothDevice> bondedDevices, List<BluetoothDevice> newDevices) {
             Toast.makeText(SearchingActivity.this, "onSearchCompleted", Toast.LENGTH_SHORT).show();
+            for (BluetoothDevice device : bondedDevices) {
+                //devices.add(device);
+                //deviceNames.add(device.getName());
+                Log.e("TAG", device.getName());
+            }
+            for (BluetoothDevice device : newDevices) {
+                //devices.add(device);
+                //deviceNames.add(device.getName());
+                Log.e("TAG", device.getName());
+            }
+            Log.e("TAG", "onSearchCompleted");
+            //deviceAdapter.notifyDataSetChanged();
             //devices = newDevices;
             //listView.setClickable(true);
         }
