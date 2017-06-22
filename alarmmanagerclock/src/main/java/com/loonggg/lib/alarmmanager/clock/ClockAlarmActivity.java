@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.View;
 
-import top.wuhaojie.bthelper.BtHelperClient;
+//import top.wuhaojie.bthelper.BtHelperClient;
 
 
 public class ClockAlarmActivity extends Activity {
@@ -57,7 +57,7 @@ public class ClockAlarmActivity extends Activity {
             }
         });
 
-        BtHelperClient btHelperClient = BtHelperClient.from(this);
+        //BtHelperClient btHelperClient = BtHelperClient.from(this);
 
 
     }

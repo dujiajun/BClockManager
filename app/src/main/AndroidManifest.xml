@@ -24,6 +24,11 @@
         </activity>
         <activity android:name=".activity.ClockActivity"></activity>
         <activity android:name=".activity.SearchingActivity"></activity>
+
+        <service android:name="com.inuker.bluetooth.library.BluetoothService" />
     </application>
 
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 </manifest>

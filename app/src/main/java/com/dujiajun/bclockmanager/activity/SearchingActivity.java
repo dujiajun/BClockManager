@@ -26,6 +26,16 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.dujiajun.bclockmanager.R;
+import com.inuker.bluetooth.library.BluetoothClient;
+import com.inuker.bluetooth.library.Constants;
+import com.inuker.bluetooth.library.beacon.Beacon;
+import com.inuker.bluetooth.library.connect.listener.BluetoothStateListener;
+import com.inuker.bluetooth.library.connect.response.BleConnectResponse;
+import com.inuker.bluetooth.library.model.BleGattProfile;
+import com.inuker.bluetooth.library.search.SearchRequest;
+import com.inuker.bluetooth.library.search.SearchResult;
+import com.inuker.bluetooth.library.search.response.SearchResponse;
+import com.inuker.bluetooth.library.utils.BluetoothLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,20 +43,25 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import top.wuhaojie.bthelper.BtHelperClient;
-import top.wuhaojie.bthelper.OnSearchDeviceListener;
+import top.wuhaojie.bthelper.MessageItem;
+
+import static com.inuker.bluetooth.library.Constants.REQUEST_SUCCESS;
+
+//import top.wuhaojie.bthelper.BtHelperClient;
+//import top.wuhaojie.bthelper.OnSearchDeviceListener;
 
 /**
  * Created by cqduj on 2017/06/06.
  */
 
 public class SearchingActivity extends AppCompatActivity {
-    BtHelperClient btHelperClient;
+    //BtHelperClient btHelperClient;
     //private BluetoothAdapter adapter;
     List<String> deviceNames = new ArrayList<>();
     ArrayAdapter<String> deviceAdapter;
     List<BluetoothDevice> devices = new ArrayList<>();
-
+    BluetoothClient mClient;
+    String connect_mac;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,60 +97,129 @@ public class SearchingActivity extends AppCompatActivity {
                 editor.putString("devicename", devices.get(i).getName());
                 editor.putString("deviceaddress", devices.get(i).getAddress());
                 editor.apply();
+                connect_mac = devices.get(i).getName();
                 Toast.makeText(SearchingActivity.this, devices.get(i).getName() + " " + devices.get(i).getAddress(), Toast.LENGTH_SHORT).show();
+                mClient.connect(connect_mac, new BleConnectResponse() {
+                    @Override
+                    public void onResponse(int code, BleGattProfile profile) {
+                        if (code == REQUEST_SUCCESS) {
+                            //mClient.write();
+                        }
+                    }
+                });
             }
         });
-        if (btHelperClient == null) {
+        /*if (btHelperClient == null) {
             btHelperClient = BtHelperClient.from(this);
         }
-        btHelperClient.searchDevices(onSearchDeviceListener);
+        btHelperClient.searchDevices(new OnSearchDeviceListener() {
+            @Override
+            public void onStartDiscovery() {
+                devices.clear();
+                deviceNames.clear();
+                deviceAdapter.notifyDataSetChanged();
+                Toast.makeText(SearchingActivity.this, "onStartDiscovery", Toast.LENGTH_SHORT).show();//.d("TAG", "onStartDiscovery()");
+                //listView.setClickable(false);
+            }
+
+            @Override
+            public void onNewDeviceFounded(BluetoothDevice device) {
+                //Toast.makeText(SearchingActivity.this, "onNewDeviceFounded"+device.getName(), Toast.LENGTH_SHORT).show();
+                deviceNames.add(device.getName());
+                devices.add(device);
+                deviceAdapter.notifyDataSetChanged();
+                //Log.d("TAG", "new device: " + device.getName() + " " + device.getAddress());
+            }
+
+            @Override
+            public void onSearchCompleted(List<BluetoothDevice> bondedDevices, List<BluetoothDevice> newDevices) {
+                Toast.makeText(SearchingActivity.this, "onSearchCompleted", Toast.LENGTH_SHORT).show();
+                for (BluetoothDevice device : bondedDevices) {
+                    //devices.add(device);
+                    //deviceNames.add(device.getName());
+                    Log.e("TAG", device.getName());
+                }
+                for (BluetoothDevice device : newDevices) {
+                    //devices.add(device);
+                    //deviceNames.add(device.getName());
+                    Log.e("TAG", device.getName());
+                }
+                Log.e("TAG", "onSearchCompleted");
+                //deviceAdapter.notifyDataSetChanged();
+                //devices = newDevices;
+                //listView.setClickable(true);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                e.printStackTrace();
+                Toast.makeText(SearchingActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });*/
+
+        mClient = new BluetoothClient(getApplicationContext());
+        mClient.registerBluetoothStateListener(mBluetoothStateListener);
+
+        if (!mClient.isBluetoothOpened()) {
+            mClient.openBluetooth();
+        } else {
+            search();
+        }
+
     }
 
-    OnSearchDeviceListener onSearchDeviceListener = new OnSearchDeviceListener() {
-        @Override
-        public void onStartDiscovery() {
-            devices.clear();
-            deviceNames.clear();
-            deviceAdapter.notifyDataSetChanged();
-            Toast.makeText(SearchingActivity.this, "onStartDiscovery", Toast.LENGTH_SHORT).show();//.d("TAG", "onStartDiscovery()");
-            //listView.setClickable(false);
-        }
+    private void search() {
+        SearchRequest request = new SearchRequest.Builder()
+                .searchBluetoothLeDevice(3000, 3)   // 先扫BLE设备3次，每次3s
+                .searchBluetoothClassicDevice(5000) // 再扫经典蓝牙5s
+                .searchBluetoothLeDevice(2000)      // 再扫BLE设备2s
+                .build();
 
-        @Override
-        public void onNewDeviceFounded(BluetoothDevice device) {
-            //Toast.makeText(SearchingActivity.this, "onNewDeviceFounded"+device.getName(), Toast.LENGTH_SHORT).show();
-            deviceNames.add(device.getName());
-            devices.add(device);
-            deviceAdapter.notifyDataSetChanged();
-            //Log.d("TAG", "new device: " + device.getName() + " " + device.getAddress());
-        }
-
-        @Override
-        public void onSearchCompleted(List<BluetoothDevice> bondedDevices, List<BluetoothDevice> newDevices) {
-            Toast.makeText(SearchingActivity.this, "onSearchCompleted", Toast.LENGTH_SHORT).show();
-            for (BluetoothDevice device : bondedDevices) {
-                //devices.add(device);
-                //deviceNames.add(device.getName());
-                Log.e("TAG", device.getName());
+        mClient.search(request, new SearchResponse() {
+            @Override
+            public void onSearchStarted() {
+                Toast.makeText(SearchingActivity.this, "onSearchStarted", Toast.LENGTH_SHORT).show();
+                devices.clear();
+                deviceNames.clear();
+                deviceAdapter.notifyDataSetChanged();
             }
-            for (BluetoothDevice device : newDevices) {
-                //devices.add(device);
-                //deviceNames.add(device.getName());
-                Log.e("TAG", device.getName());
+
+            @Override
+            public void onDeviceFounded(SearchResult device) {
+                //Beacon beacon = new Beacon(device.scanRecord);
+                //BluetoothLog.v(String.format("beacon for %s\n%s", device.getAddress(), beacon.toString()));
+                //Toast.makeText(SearchingActivity.this, "onDeviceFounded "+device.getName(), Toast.LENGTH_SHORT).show();
+                if (!"NULL".equals(device.getName())) {
+                    deviceNames.add(device.getName());
+                    devices.add(device.device);
+                    deviceAdapter.notifyDataSetChanged();
+                }
+
             }
-            Log.e("TAG", "onSearchCompleted");
-            //deviceAdapter.notifyDataSetChanged();
-            //devices = newDevices;
-            //listView.setClickable(true);
+
+            @Override
+            public void onSearchStopped() {
+                Toast.makeText(SearchingActivity.this, "onSearchStopped", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onSearchCanceled() {
+
+            }
+        });
+    }
+
+    //OnSearchDeviceListener onSearchDeviceListener = ;
+    private final BluetoothStateListener mBluetoothStateListener = new BluetoothStateListener() {
+        @Override
+        public void onBluetoothStateChanged(boolean openOrClosed) {
+            if (openOrClosed) {
+                search();
+            }
+
         }
 
-        @Override
-        public void onError(Exception e) {
-            e.printStackTrace();
-            Toast.makeText(SearchingActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
     };
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -148,9 +232,9 @@ public class SearchingActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_refresh:
-                if (btHelperClient != null) {
-                    btHelperClient.searchDevices(onSearchDeviceListener);
-                }
+                //if (btHelperClient != null) {
+                //btHelperClient.searchDevices(onSearchDeviceListener);
+                //}
                 break;
             default:
                 break;
@@ -161,8 +245,12 @@ public class SearchingActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         //unregisterReceiver(mReceiver);
-        if (btHelperClient != null) {
+        /*if (btHelperClient != null) {
             btHelperClient.close();
+        }*/
+        mClient.unregisterBluetoothStateListener(mBluetoothStateListener);
+        if (mClient.getConnectStatus(connect_mac) == Constants.STATUS_DEVICE_CONNECTING) {
+            mClient.disconnect(connect_mac);
         }
         super.onPause();
     }

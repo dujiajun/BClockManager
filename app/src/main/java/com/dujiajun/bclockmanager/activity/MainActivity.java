@@ -27,9 +27,9 @@ import com.dujiajun.bclockmanager.model.Clock;
 import java.util.ArrayList;
 import java.util.List;
 
-import top.wuhaojie.bthelper.BtHelperClient;
-import top.wuhaojie.bthelper.MessageItem;
-import top.wuhaojie.bthelper.OnSendMessageListener;
+//import top.wuhaojie.bthelper.BtHelperClient;
+//import top.wuhaojie.bthelper.MessageItem;
+//import top.wuhaojie.bthelper.OnSendMessageListener;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    BtHelperClient btHelperClient;
+    //BtHelperClient btHelperClient;
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -119,13 +119,14 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, SearchingActivity.class));
                 break;
             case R.id.menu_about:
-                //Toast.makeText(MainActivity.this, "About Clicked", Toast.LENGTH_SHORT).show();
-                if (btHelperClient == null) {
-                    btHelperClient = BtHelperClient.from(this);
-                }
                 SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 String mac = pref.getString("deviceaddress", "");
                 Toast.makeText(this, mac, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "About Clicked", Toast.LENGTH_SHORT).show();
+                /*if (btHelperClient == null) {
+                    btHelperClient = BtHelperClient.from(this);
+                }
+
                 MessageItem messageItem = new MessageItem("p");
                 btHelperClient.sendMessage(mac, messageItem, new OnSendMessageListener() {
                     @Override
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onError(Exception e) {
                         Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                });*/
                 break;
         }
         return true;
@@ -150,9 +151,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        if (btHelperClient != null) {
+        /*if (btHelperClient != null) {
             btHelperClient.close();
-        }
+        }*/
         super.onPause();
     }
 
