@@ -1,5 +1,8 @@
 package com.dujiajun.bclockmanager.activity;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -23,13 +26,11 @@ import android.widget.Toast;
 import com.dujiajun.bclockmanager.MyDatabaseHelper;
 import com.dujiajun.bclockmanager.R;
 import com.dujiajun.bclockmanager.model.Clock;
+import com.loonggg.lib.alarmmanager.clock.ClockAlarmActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//import top.wuhaojie.bthelper.BtHelperClient;
-//import top.wuhaojie.bthelper.MessageItem;
-//import top.wuhaojie.bthelper.OnSendMessageListener;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private ClockAdapter clockAdapter;
     private List<Clock> clockList = new ArrayList<>();
     private SQLiteDatabase db;
+    //private BtHelperClient btHelperClient;
 
     @Override
     protected void onResume() {
@@ -71,21 +73,14 @@ public class MainActivity extends AppCompatActivity {
 
         MyDatabaseHelper dbHelper = new MyDatabaseHelper(MainActivity.this, "clocks.db", null, 1);
         db = dbHelper.getReadableDatabase();
+
+        //btHelperClient = BtHelperClient.from(this);
     }
 
     private void initClocks() {
 
         clockList.clear();
-        /*
-        if (DataSupport.findAll(Clock.class)!=null)
-        {
-            List<Clock> newList = DataSupport.findAll(Clock.class);;
-            for (Clock cl : newList ) {
-                clockList.add(cl);
-            }
-        }
 
-*/
         Cursor cursor = db.rawQuery("select * from Clocks", null);
         if (cursor.moveToFirst()) {
             do {
@@ -119,41 +114,18 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, SearchingActivity.class));
                 break;
             case R.id.menu_about:
-                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                String mac = pref.getString("deviceaddress", "");
-                Toast.makeText(this, mac, Toast.LENGTH_SHORT).show();
-                //Toast.makeText(MainActivity.this, "About Clicked", Toast.LENGTH_SHORT).show();
-                /*if (btHelperClient == null) {
-                    btHelperClient = BtHelperClient.from(this);
-                }
-
-                MessageItem messageItem = new MessageItem("p");
-                btHelperClient.sendMessage(mac, messageItem, new OnSendMessageListener() {
-                    @Override
-                    public void onSuccess(int i, String s) {
-                        Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onConnectionLost(Exception e) {
-                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });*/
-                break;
+                Intent i = new Intent(MainActivity.this, ClockAlarmActivity.class);
+                i.putExtra("msg", "闹钟响了");
+                i.putExtra("flag", 0);
+                startActivity(i);
         }
         return true;
     }
 
+
     @Override
     protected void onPause() {
-        /*if (btHelperClient != null) {
-            btHelperClient.close();
-        }*/
+
         super.onPause();
     }
 

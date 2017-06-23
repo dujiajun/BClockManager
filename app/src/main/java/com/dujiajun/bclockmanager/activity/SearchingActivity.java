@@ -1,22 +1,17 @@
 package com.dujiajun.bclockmanager.activity;
 
-import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
+
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,27 +23,21 @@ import android.widget.Toast;
 import com.dujiajun.bclockmanager.R;
 import com.inuker.bluetooth.library.BluetoothClient;
 import com.inuker.bluetooth.library.Constants;
-import com.inuker.bluetooth.library.beacon.Beacon;
+
 import com.inuker.bluetooth.library.connect.listener.BluetoothStateListener;
 import com.inuker.bluetooth.library.connect.response.BleConnectResponse;
+import com.inuker.bluetooth.library.connect.response.BleWriteResponse;
 import com.inuker.bluetooth.library.model.BleGattProfile;
 import com.inuker.bluetooth.library.search.SearchRequest;
 import com.inuker.bluetooth.library.search.SearchResult;
 import com.inuker.bluetooth.library.search.response.SearchResponse;
-import com.inuker.bluetooth.library.utils.BluetoothLog;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
 import java.util.UUID;
 
-import top.wuhaojie.bthelper.MessageItem;
-
 import static com.inuker.bluetooth.library.Constants.REQUEST_SUCCESS;
-
-//import top.wuhaojie.bthelper.BtHelperClient;
-//import top.wuhaojie.bthelper.OnSearchDeviceListener;
 
 /**
  * Created by cqduj on 2017/06/06.
@@ -62,6 +51,7 @@ public class SearchingActivity extends AppCompatActivity {
     List<BluetoothDevice> devices = new ArrayList<>();
     BluetoothClient mClient;
     String connect_mac;
+    UUID SerialPortServiceClass_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,65 +87,26 @@ public class SearchingActivity extends AppCompatActivity {
                 editor.putString("devicename", devices.get(i).getName());
                 editor.putString("deviceaddress", devices.get(i).getAddress());
                 editor.apply();
-                connect_mac = devices.get(i).getName();
+                connect_mac = devices.get(i).getAddress();
                 Toast.makeText(SearchingActivity.this, devices.get(i).getName() + " " + devices.get(i).getAddress(), Toast.LENGTH_SHORT).show();
                 mClient.connect(connect_mac, new BleConnectResponse() {
                     @Override
                     public void onResponse(int code, BleGattProfile profile) {
                         if (code == REQUEST_SUCCESS) {
-                            //mClient.write();
+                            //TODO
+                            mClient.write(connect_mac, SerialPortServiceClass_UUID, UUID.randomUUID(), "p".getBytes(), new BleWriteResponse() {
+                                @Override
+                                public void onResponse(int code) {
+                                    if (code == Constants.CODE_WRITE) {
+                                        Toast.makeText(SearchingActivity.this, "write", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                         }
                     }
                 });
             }
         });
-        /*if (btHelperClient == null) {
-            btHelperClient = BtHelperClient.from(this);
-        }
-        btHelperClient.searchDevices(new OnSearchDeviceListener() {
-            @Override
-            public void onStartDiscovery() {
-                devices.clear();
-                deviceNames.clear();
-                deviceAdapter.notifyDataSetChanged();
-                Toast.makeText(SearchingActivity.this, "onStartDiscovery", Toast.LENGTH_SHORT).show();//.d("TAG", "onStartDiscovery()");
-                //listView.setClickable(false);
-            }
-
-            @Override
-            public void onNewDeviceFounded(BluetoothDevice device) {
-                //Toast.makeText(SearchingActivity.this, "onNewDeviceFounded"+device.getName(), Toast.LENGTH_SHORT).show();
-                deviceNames.add(device.getName());
-                devices.add(device);
-                deviceAdapter.notifyDataSetChanged();
-                //Log.d("TAG", "new device: " + device.getName() + " " + device.getAddress());
-            }
-
-            @Override
-            public void onSearchCompleted(List<BluetoothDevice> bondedDevices, List<BluetoothDevice> newDevices) {
-                Toast.makeText(SearchingActivity.this, "onSearchCompleted", Toast.LENGTH_SHORT).show();
-                for (BluetoothDevice device : bondedDevices) {
-                    //devices.add(device);
-                    //deviceNames.add(device.getName());
-                    Log.e("TAG", device.getName());
-                }
-                for (BluetoothDevice device : newDevices) {
-                    //devices.add(device);
-                    //deviceNames.add(device.getName());
-                    Log.e("TAG", device.getName());
-                }
-                Log.e("TAG", "onSearchCompleted");
-                //deviceAdapter.notifyDataSetChanged();
-                //devices = newDevices;
-                //listView.setClickable(true);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                e.printStackTrace();
-                Toast.makeText(SearchingActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });*/
 
         mClient = new BluetoothClient(getApplicationContext());
         mClient.registerBluetoothStateListener(mBluetoothStateListener);
@@ -186,9 +137,7 @@ public class SearchingActivity extends AppCompatActivity {
 
             @Override
             public void onDeviceFounded(SearchResult device) {
-                //Beacon beacon = new Beacon(device.scanRecord);
-                //BluetoothLog.v(String.format("beacon for %s\n%s", device.getAddress(), beacon.toString()));
-                //Toast.makeText(SearchingActivity.this, "onDeviceFounded "+device.getName(), Toast.LENGTH_SHORT).show();
+
                 if (!"NULL".equals(device.getName())) {
                     deviceNames.add(device.getName());
                     devices.add(device.device);
@@ -232,9 +181,7 @@ public class SearchingActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_refresh:
-                //if (btHelperClient != null) {
-                //btHelperClient.searchDevices(onSearchDeviceListener);
-                //}
+
                 break;
             default:
                 break;
@@ -244,112 +191,12 @@ public class SearchingActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        //unregisterReceiver(mReceiver);
-        /*if (btHelperClient != null) {
-            btHelperClient.close();
-        }*/
+
         mClient.unregisterBluetoothStateListener(mBluetoothStateListener);
         if (mClient.getConnectStatus(connect_mac) == Constants.STATUS_DEVICE_CONNECTING) {
             mClient.disconnect(connect_mac);
         }
         super.onPause();
     }
-    /*private List<String> bondedDevices = new ArrayList<>();
-    private List<String> newDevices = new ArrayList<>();
-    private BluetoothAdapter adapter;
-    private void search() {
-        adapter = BluetoothAdapter.getDefaultAdapter();
-        if (adapter==null){
-            Toast.makeText(this, "获取蓝牙设备失败", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!adapter.isEnabled()) {
-            adapter.enable();
-            Intent enable = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            startActivity(enable);
-        }
 
-        Set<BluetoothDevice> bondedDevices = adapter.getBondedDevices();
-
-        if (bondedDevices.size()>0){
-            for (BluetoothDevice device : bondedDevices)
-            this.bondedDevices.add(device.getName()+"\n"+device.getAddress());
-        }
-
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        this.registerReceiver(mReceiver, filter);
-
-        //当搜索结束后调用onReceive
-        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        this.registerReceiver(mReceiver, filter);
-        //enable.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600); //3600为蓝牙设备可见时间
-
-        Intent searchIntent = new Intent(this, ComminuteActivity.class);
-        startActivity(searchIntent);
-    }*/
-/*
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if(BluetoothDevice.ACTION_FOUND.equals(action)){
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                // 已经配对的则跳过
-                if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-                    newDevices.add(device.getName() + "\n" + device.getAddress());  //保存设备地址与名字
-                }
-            }else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {  //搜索结束
-                if (newDevices.size() == 0) {
-                    newDevices.add("没有搜索到设备");
-                }
-            }
-
-        }
-    };
-
-
-*/
-    //UUID可以看做一个端口号
-    /*private static final UUID MY_UUID =
-            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    //像一个服务器一样时刻监听是否有连接建立
-    private class AcceptThread extends Thread{
-        private BluetoothServerSocket serverSocket;
-
-        public AcceptThread(boolean secure){
-            BluetoothServerSocket temp = null;
-            try {
-                temp = adapter.listenUsingRfcommWithServiceRecord(
-                        NAME_INSECURE, MY_UUID);
-            } catch (IOException e) {
-                Log.e("app", "listen() failed", e);
-            }
-            serverSocket = temp;
-        }
-
-        public void run(){
-            BluetoothSocket socket=null;
-            while(true){
-                try {
-                    socket = serverSocket.accept();
-                } catch (IOException e) {
-                    Log.e("app", "accept() failed", e);
-                    break;
-                }
-            }
-            if(socket!=null){
-                //此时可以新建一个数据交换线程，把此socket传进去
-            }
-        }
-
-        //取消监听
-        public void cancel(){
-            try {
-                serverSocket.close();
-            } catch (IOException e) {
-                Log.e("app", "Socket Type close() of server failed", e);
-            }
-        }
-
-    }*/
 }

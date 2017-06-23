@@ -24,9 +24,6 @@ public class ClockSettingFragment extends PreferenceFragment implements Preferen
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.pref_clock_setting);
         pref_frequency = (MultiSelectListPreference) findPreference("frequency");
-        //String[] weekdays = {"星期一","星期二","星期三","星期四","星期五","星期六","星期日"};
-        //pref_frequency.setEntries(weekdays);
-        //pref_frequency.setEntryValues(weekdays);
         pref_vibrate = (SwitchPreference) findPreference("vibrate");
 
     }
